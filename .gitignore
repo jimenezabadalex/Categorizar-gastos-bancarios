@@ -1,0 +1,6 @@
+venv/
+data/input/
+data/output/
+data/archive/
+__pycache__/
+.env
