@@ -46,6 +46,9 @@ def limpiar_datos(ruta):
     # Filtrar gastos (negativos)
     df_gastos = df[df[col_importe] < 0].copy()
     
+    # Convertir los importes a positivo para los reportes
+    df_gastos[col_importe] = df_gastos[col_importe].abs()
+    
     # Aplicar la súper limpieza de texto al concepto bancario
     df_gastos['Concepto_limpio'] = df_gastos[col_concept].apply(normalizar_texto)
     
@@ -91,7 +94,16 @@ def ejecutar_pipeline():
     
     # Crear la tabla de resumen de gastos totales agrupados por categoría padre
     resumen_totales = df_clasificado.groupby('Categoria_Global')['Importe'].sum().reset_index()
-    resumen_totales = resumen_totales.sort_values(by='Importe', ascending=True)
+    resumen_totales = resumen_totales.sort_values(by='Importe', ascending=False)
+    
+    # --- NUEVO: CÁLCULO DE LA SUMA TOTAL ---
+    # Calculamos la suma de la columna Importe
+    suma_total = resumen_totales['Importe'].sum()
+    # Creamos una nueva fila con la etiqueta y el valor
+    fila_total = pd.DataFrame([{'Categoria_Global': 'TOTAL GASTOS', 'Importe': suma_total}])
+    # La enganchamos al final de la tabla usando pd.concat
+    resumen_totales = pd.concat([resumen_totales, fila_total], ignore_index=True)
+    # ---------------------------------------
     
     # Exportar los 3 archivos a Excel
     df_clasificado.to_excel(SALIDA_REPORTE, index=False)
@@ -103,10 +115,11 @@ def ejecutar_pipeline():
     print(f"Total de movimientos analizados: {len(df_clasificado)}")
     print(f"Movimientos clasificados con éxito: {len(df_clasificado) - len(df_sin_clasificar)}")
     print(f"Movimientos SIN CLASIFICAR: {len(df_sin_clasificar)}")
+    print(f"💸 Gasto total registrado: {suma_total:,.2f} €")
     print("\nArchivos generados en data/output/:")
     print("1. gastos_clasificados.xlsx (El reporte completo detallado)")
     print("2. pendientes_clasificar.xlsx (Tu lista de tareas para añadir al JSON)")
-    print("3. resumen_totales.xlsx (La suma de cuánto has gastado en cada partida)")
+    print("3. resumen_totales.xlsx (La suma de cuánto has gastado en cada partida + TOTAL)")
 
 if __name__ == "__main__":
     ejecutar_pipeline()
