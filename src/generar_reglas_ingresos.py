@@ -12,7 +12,7 @@ def crear_reglas_automaticas():
     # Preparamos la estructura base del JSON
     reglas = {
         "Impuestos - Devoluciones Hacienda": [],
-        "Ingresos - Particulares": []
+        "Particulares - Varios": []
     }
     
     # Palabras clave de Hacienda
@@ -51,12 +51,12 @@ def crear_reglas_automaticas():
                 
         if es_empresa:
             # Creamos una categoría única en el JSON dedicada SOLO a esta empresa
-            nombre_categoria = f"Empresa - {c}"
+            nombre_categoria = f"Empresas - {c}"
             reglas[nombre_categoria] = [c]
             
         else:
             # 3. Si no es Hacienda ni tiene sufijo de empresa, va a Particulares
-            reglas["Ingresos - Particulares"].append(c)
+            reglas["Particulares - Varios"].append(c)
             
     # Guardar el resultado en el archivo JSON definitivo
     ruta_json = BASE_DIR / "config" / "reglas_ingresos.json"
