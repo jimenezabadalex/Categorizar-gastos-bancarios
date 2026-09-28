@@ -5,16 +5,16 @@ from config import (
     SALIDA_REPORTE, SALIDA_PENDIENTES, SALIDA_RESUMEN, cargar_reglas,
     SALIDA_REPORTE_INGRESOS, SALIDA_PENDIENTES_INGRESOS, SALIDA_RESUMEN_INGRESOS, cargar_reglas_ingresos
 )
-# Ahora importamos clasificar_movimientos
 from motor import limpiar_datos, clasificar_movimientos
 
 def ejecutar_pipeline():
-    print("🚀 Iniciando categorización integral (Gastos e Ingresos)...")
+    print("🚀 Iniciando categorización integral automática...")
     
     reglas_gastos = cargar_reglas()
     reglas_ingresos = cargar_reglas_ingresos()
     
-    df_gastos, df_ingresos = limpiar_datos(ARCHIVO_REAL)
+    # --- AHORA RECIBIMOS 3 VARIABLES DEL MOTOR ---
+    df_gastos, df_ingresos, saldo_inicial = limpiar_datos(ARCHIVO_REAL)
     
     # --- 1. PROCESAMIENTO DE GASTOS ---
     df_gastos_clasificado = clasificar_movimientos(df_gastos, reglas_gastos)
@@ -45,35 +45,28 @@ def ejecutar_pipeline():
     resumen_ingresos = pd.concat([resumen_ingresos, fila_total_i], ignore_index=True)
     
     # --- 3. EXPORTAR ARCHIVOS ---
-    # Gastos
     df_gastos_clasificado.to_excel(SALIDA_REPORTE, index=False)
     pendientes_gastos.to_excel(SALIDA_PENDIENTES, index=False)
     resumen_gastos.to_excel(SALIDA_RESUMEN, index=False)
     
-    # Ingresos
     df_ingresos_clasificado.to_excel(SALIDA_REPORTE_INGRESOS, index=False)
     pendientes_ingresos.to_excel(SALIDA_PENDIENTES_INGRESOS, index=False)
     resumen_ingresos.to_excel(SALIDA_RESUMEN_INGRESOS, index=False)
     
     # --- 4. MOSTRAR RESULTADOS EN CONSOLA ---
+    flujo_periodo = suma_ingresos - suma_gastos
+    saldo_final_banco = saldo_inicial + flujo_periodo
+    
     print("\n📊 RESUMEN DE EJECUCIÓN:")
     print(f"Gastos SIN CLASIFICAR: {len(pend_gastos_df)} de {len(df_gastos_clasificado)}")
     print(f"Ingresos SIN CLASIFICAR: {len(pend_ingresos_df)} de {len(df_ingresos_clasificado)}")
     print("-" * 30)
-    print(f"💸 GASTO TOTAL: {suma_gastos:,.2f} €")
-    print(f"💰 INGRESO TOTAL: {suma_ingresos:,.2f} €")
+    print(f"🏦 SALDO INICIAL AUTOMÁTICO: {saldo_inicial:,.2f} €")
+    print(f"💰 INGRESOS TOTALES: +{suma_ingresos:,.2f} €")
+    print(f"💸 GASTOS TOTALES: -{suma_gastos:,.2f} €")
+    print(f"📈 FLUJO DEL PERIODO: {flujo_periodo:,.2f} €")
     print("-" * 30)
-    print(f"📈 SALDO DEL PERIODO: {(suma_ingresos - suma_gastos):,.2f} €")
-    
-    print("\nArchivos generados con éxito en data/output/:")
-    print("📁 En la carpeta /gastos/:")
-    print(f"  ├─ gastos_clasificados_{NOMBRE_EXTRACTO}.xlsx")
-    print(f"  ├─ pendientes_clasificar_{NOMBRE_EXTRACTO}.xlsx")
-    print(f"  └─ resumen_totales_{NOMBRE_EXTRACTO}.xlsx")
-    print("📁 En la carpeta /ingresos/:")
-    print(f"  ├─ ingresos_clasificados_{NOMBRE_EXTRACTO}.xlsx")
-    print(f"  ├─ pendientes_clasificar_ingresos_{NOMBRE_EXTRACTO}.xlsx")
-    print(f"  └─ resumen_totales_ingresos_{NOMBRE_EXTRACTO}.xlsx")
+    print(f"✅ SALDO FINAL EN BANCO: {saldo_final_banco:,.2f} €")
 
 if __name__ == "__main__":
     ejecutar_pipeline()
