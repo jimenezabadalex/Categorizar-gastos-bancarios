@@ -4,3 +4,4 @@ data/output/
 data/archive/
 __pycache__/
 .env
+config/reglas.json
