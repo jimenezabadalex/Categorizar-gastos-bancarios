@@ -5,7 +5,7 @@ BASE_DIR =Path(__file__).parent.parent
 
 #Apunto a la carpeta segun input
 
-ARCHIVO_REAL= BASE_DIR / "data" / "input" / "2026.xlsx"
+ARCHIVO_REAL= BASE_DIR / "data" / "input" / "2025.xlsx"
 
 SALIDA_CONCEPTOS = BASE_DIR / "data" / "output" / "conceptos_unicos.xlsx"
 

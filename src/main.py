@@ -5,13 +5,16 @@ from pathlib import Path
 
 # Configuración de rutas
 BASE_DIR = Path(__file__).parent.parent
-ARCHIVO_REAL = BASE_DIR / "data" / "input" / "2026.xlsx"
+ARCHIVO_REAL = BASE_DIR / "data" / "input" / "2025-2026.xlsx"
 ARCHIVO_REGLAS = BASE_DIR / "config" / "reglas.json"
 
-SALIDA_REPORTE = BASE_DIR / "data" / "output" / "gastos_clasificados.xlsx"
-SALIDA_PENDIENTES = BASE_DIR / "data" / "output" / "pendientes_clasificar.xlsx"
-SALIDA_RESUMEN = BASE_DIR / "data" / "output" / "resumen_totales.xlsx"
+# Extraemos el nombre del archivo original (ej. "2026")
+NOMBRE_EXTRACTO = ARCHIVO_REAL.stem 
 
+# Añadimos el nombre del extracto al final de cada archivo generado
+SALIDA_REPORTE = BASE_DIR / "data" / "output" / f"gastos_clasificados_{NOMBRE_EXTRACTO}.xlsx"
+SALIDA_PENDIENTES = BASE_DIR / "data" / "output" / f"pendientes_clasificar_{NOMBRE_EXTRACTO}.xlsx"
+SALIDA_RESUMEN = BASE_DIR / "data" / "output" / f"resumen_totales_{NOMBRE_EXTRACTO}.xlsx"
 def cargar_reglas():
     with open(ARCHIVO_REGLAS, 'r', encoding='utf-8') as f:
         return json.load(f)
@@ -117,9 +120,9 @@ def ejecutar_pipeline():
     print(f"Movimientos SIN CLASIFICAR: {len(df_sin_clasificar)}")
     print(f"💸 Gasto total registrado: {suma_total:,.2f} €")
     print("\nArchivos generados en data/output/:")
-    print("1. gastos_clasificados.xlsx (El reporte completo detallado)")
-    print("2. pendientes_clasificar.xlsx (Tu lista de tareas para añadir al JSON)")
-    print("3. resumen_totales.xlsx (La suma de cuánto has gastado en cada partida + TOTAL)")
+    print(f"1. gastos_clasificados_{NOMBRE_EXTRACTO}.xlsx (El reporte completo detallado)")
+    print(f"2. pendientes_clasificar_{NOMBRE_EXTRACTO}.xlsx (Tu lista de tareas)")
+    print(f"3. resumen_totales_{NOMBRE_EXTRACTO}.xlsx (La suma por partidas + TOTAL)")
 
 if __name__ == "__main__":
     ejecutar_pipeline()
