@@ -1,59 +1,79 @@
 import pandas as pd
 
 from config import (
-    ARCHIVO_REAL, NOMBRE_EXTRACTO, SALIDA_REPORTE, 
-    SALIDA_PENDIENTES, SALIDA_RESUMEN, SALIDA_INGRESOS, cargar_reglas
+    ARCHIVO_REAL, NOMBRE_EXTRACTO, 
+    SALIDA_REPORTE, SALIDA_PENDIENTES, SALIDA_RESUMEN, cargar_reglas,
+    SALIDA_REPORTE_INGRESOS, SALIDA_PENDIENTES_INGRESOS, SALIDA_RESUMEN_INGRESOS, cargar_reglas_ingresos
 )
-from motor import limpiar_datos, clasificar_gastos
+# Ahora importamos clasificar_movimientos
+from motor import limpiar_datos, clasificar_movimientos
 
 def ejecutar_pipeline():
-    print("🚀 Iniciando categorización de cuenta bancaria...")
+    print("🚀 Iniciando categorización integral (Gastos e Ingresos)...")
     
-    reglas = cargar_reglas()
+    reglas_gastos = cargar_reglas()
+    reglas_ingresos = cargar_reglas_ingresos()
+    
     df_gastos, df_ingresos = limpiar_datos(ARCHIVO_REAL)
     
-    # --- PROCESAMIENTO DE GASTOS ---
-    df_clasificado = clasificar_gastos(df_gastos, reglas)
+    # --- 1. PROCESAMIENTO DE GASTOS ---
+    df_gastos_clasificado = clasificar_movimientos(df_gastos, reglas_gastos)
     
-    df_sin_clasificar = df_clasificado[df_clasificado['Categoria_Detalle'] == "SIN CLASIFICAR"]
-    pendientes = df_sin_clasificar.groupby('Concepto_limpio').size().reset_index(name='Frecuencia')
-    pendientes = pendientes.sort_values(by='Frecuencia', ascending=False)
+    pend_gastos_df = df_gastos_clasificado[df_gastos_clasificado['Categoria_Detalle'] == "SIN CLASIFICAR"]
+    pendientes_gastos = pend_gastos_df.groupby('Concepto_limpio').size().reset_index(name='Frecuencia')
+    pendientes_gastos = pendientes_gastos.sort_values(by='Frecuencia', ascending=False)
     
-    resumen_totales = df_clasificado.groupby('Categoria_Global')['Importe'].sum().reset_index()
-    resumen_totales = resumen_totales.sort_values(by='Importe', ascending=False)
+    resumen_gastos = df_gastos_clasificado.groupby('Categoria_Global')['Importe'].sum().reset_index()
+    resumen_gastos = resumen_gastos.sort_values(by='Importe', ascending=False)
     
-    suma_gastos = resumen_totales['Importe'].sum()
-    fila_total = pd.DataFrame([{'Categoria_Global': 'TOTAL GASTOS', 'Importe': suma_gastos}])
-    resumen_totales = pd.concat([resumen_totales, fila_total], ignore_index=True)
+    suma_gastos = resumen_gastos['Importe'].sum()
+    fila_total_g = pd.DataFrame([{'Categoria_Global': 'TOTAL GASTOS', 'Importe': suma_gastos}])
+    resumen_gastos = pd.concat([resumen_gastos, fila_total_g], ignore_index=True)
     
-    # --- PROCESAMIENTO DE INGRESOS ---
-    df_ingresos = df_ingresos.sort_values(by='Importe', ascending=False)
-    suma_ingresos = df_ingresos['Importe'].sum()
+    # --- 2. PROCESAMIENTO DE INGRESOS ---
+    df_ingresos_clasificado = clasificar_movimientos(df_ingresos, reglas_ingresos)
     
-    # --- EXPORTAR ARCHIVOS ---
-    df_clasificado.to_excel(SALIDA_REPORTE, index=False)
-    pendientes.to_excel(SALIDA_PENDIENTES, index=False)
-    resumen_totales.to_excel(SALIDA_RESUMEN, index=False)
-    df_ingresos.to_excel(SALIDA_INGRESOS, index=False)
+    pend_ingresos_df = df_ingresos_clasificado[df_ingresos_clasificado['Categoria_Detalle'] == "SIN CLASIFICAR"]
+    pendientes_ingresos = pend_ingresos_df.groupby('Concepto_limpio').size().reset_index(name='Frecuencia')
+    pendientes_ingresos = pendientes_ingresos.sort_values(by='Frecuencia', ascending=False)
     
-    # --- MOSTRAR RESULTADOS EN CONSOLA ---
+    resumen_ingresos = df_ingresos_clasificado.groupby('Categoria_Global')['Importe'].sum().reset_index()
+    resumen_ingresos = resumen_ingresos.sort_values(by='Importe', ascending=False)
+    
+    suma_ingresos = resumen_ingresos['Importe'].sum()
+    fila_total_i = pd.DataFrame([{'Categoria_Global': 'TOTAL INGRESOS', 'Importe': suma_ingresos}])
+    resumen_ingresos = pd.concat([resumen_ingresos, fila_total_i], ignore_index=True)
+    
+    # --- 3. EXPORTAR ARCHIVOS ---
+    # Gastos
+    df_gastos_clasificado.to_excel(SALIDA_REPORTE, index=False)
+    pendientes_gastos.to_excel(SALIDA_PENDIENTES, index=False)
+    resumen_gastos.to_excel(SALIDA_RESUMEN, index=False)
+    
+    # Ingresos
+    df_ingresos_clasificado.to_excel(SALIDA_REPORTE_INGRESOS, index=False)
+    pendientes_ingresos.to_excel(SALIDA_PENDIENTES_INGRESOS, index=False)
+    resumen_ingresos.to_excel(SALIDA_RESUMEN_INGRESOS, index=False)
+    
+    # --- 4. MOSTRAR RESULTADOS EN CONSOLA ---
     print("\n📊 RESUMEN DE EJECUCIÓN:")
-    print(f"Total de movimientos de GASTO analizados: {len(df_clasificado)}")
-    print(f"Gastos SIN CLASIFICAR: {len(df_sin_clasificar)}")
+    print(f"Gastos SIN CLASIFICAR: {len(pend_gastos_df)} de {len(df_gastos_clasificado)}")
+    print(f"Ingresos SIN CLASIFICAR: {len(pend_ingresos_df)} de {len(df_ingresos_clasificado)}")
     print("-" * 30)
     print(f"💸 GASTO TOTAL: {suma_gastos:,.2f} €")
     print(f"💰 INGRESO TOTAL: {suma_ingresos:,.2f} €")
     print("-" * 30)
     print(f"📈 SALDO DEL PERIODO: {(suma_ingresos - suma_gastos):,.2f} €")
     
-    # --- NUEVO: Textos de consola actualizados ---
     print("\nArchivos generados con éxito en data/output/:")
     print("📁 En la carpeta /gastos/:")
     print(f"  ├─ gastos_clasificados_{NOMBRE_EXTRACTO}.xlsx")
     print(f"  ├─ pendientes_clasificar_{NOMBRE_EXTRACTO}.xlsx")
     print(f"  └─ resumen_totales_{NOMBRE_EXTRACTO}.xlsx")
     print("📁 En la carpeta /ingresos/:")
-    print(f"  └─ ingresos_{NOMBRE_EXTRACTO}.xlsx")
+    print(f"  ├─ ingresos_clasificados_{NOMBRE_EXTRACTO}.xlsx")
+    print(f"  ├─ pendientes_clasificar_ingresos_{NOMBRE_EXTRACTO}.xlsx")
+    print(f"  └─ resumen_totales_ingresos_{NOMBRE_EXTRACTO}.xlsx")
 
 if __name__ == "__main__":
     ejecutar_pipeline()

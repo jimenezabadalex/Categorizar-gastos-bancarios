@@ -40,25 +40,19 @@ def limpiar_datos(ruta):
     # Devolvemos ambas tablas por separado
     return df_gastos, df_ingresos
 
-def clasificar_gastos(df, reglas):
+# RENOMBRADO: Ahora sirve tanto para ingresos como para gastos
+def clasificar_movimientos(df, reglas):
     def asignar_categoria(concepto):
         for categoria, lista_palabras in reglas.items():
             for palabra_clave in lista_palabras:
                 palabra_limpia = normalizar_texto(palabra_clave)
-                
-                # 1. Dividimos tu palabra clave en palabras sueltas
                 palabras_de_la_regla = palabra_limpia.split()
                 
-                # 2. Comprobamos si TODAS las palabras de tu regla están en el concepto
                 if all(palabra in concepto for palabra in palabras_de_la_regla):
                     return categoria
-                    
         return "SIN CLASIFICAR"
     
-    # 1. Asigna la categoría detallada
     df['Categoria_Detalle'] = df['Concepto_limpio'].apply(asignar_categoria)
-    
-    # 2. Extrae la Categoría Padre cortando por el guion
     df['Categoria_Global'] = df['Categoria_Detalle'].str.split(' - ').str[0].str.strip()
     
     return df
