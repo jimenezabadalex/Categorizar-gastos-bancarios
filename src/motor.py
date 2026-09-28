@@ -28,16 +28,17 @@ def limpiar_datos(ruta):
     df[col_importe] = df[col_importe].str.replace(',', '.', regex=False)
     df[col_importe] = pd.to_numeric(df[col_importe], errors='coerce')
     
-    # Filtrar gastos (negativos)
+    # --- 1. RUTA DE GASTOS (negativos) ---
     df_gastos = df[df[col_importe] < 0].copy()
-    
-    # Convertir los importes a positivo para los reportes
-    df_gastos[col_importe] = df_gastos[col_importe].abs()
-    
-    # Aplicar la súper limpieza de texto al concepto bancario
+    df_gastos[col_importe] = df_gastos[col_importe].abs() # Convertir a positivo para los reportes
     df_gastos['Concepto_limpio'] = df_gastos[col_concept].apply(normalizar_texto)
     
-    return df_gastos
+    # --- 2. RUTA DE INGRESOS (positivos) ---
+    df_ingresos = df[df[col_importe] > 0].copy()
+    df_ingresos['Concepto_limpio'] = df_ingresos[col_concept].apply(normalizar_texto)
+    
+    # Devolvemos ambas tablas por separado
+    return df_gastos, df_ingresos
 
 def clasificar_gastos(df, reglas):
     def asignar_categoria(concepto):
