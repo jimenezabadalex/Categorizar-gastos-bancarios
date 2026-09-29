@@ -1,11 +1,25 @@
 # 📊 Analizador Financiero Automatizado (Bank Analytics)
 
+## 💡 Visión y Objetivos del Proyecto
+Este proyecto nació con el propósito de refinar y construir una herramienta de análisis financiero basada en Python que fuera **totalmente automatizada, modular y fácil de usar**. El objetivo principal es minimizar al máximo la necesidad de hacer ajustes manuales en el código mes a mes, garantizando al mismo tiempo una **alta precisión matemática** en el cuadre de las cuentas bancarias.
+
 ## 🎯 ¿Qué es este proyecto y para qué sirve?
-Este proyecto es un ecosistema de scripts en Python diseñado para automatizar el control de las finanzas personales o empresariales. Toma los extractos bancarios en crudo (archivos Excel) y los transforma en informes clasificados, calculando con exactitud matemática el flujo de caja y los saldos reales.
+Este ecosistema de scripts toma los extractos bancarios en crudo (archivos Excel) y los transforma en informes clasificados, calculando con exactitud el flujo de caja y los saldos reales.
 
 El sistema resuelve un problema común en la contabilidad automatizada: **la diferencia entre gastos e ingresos**. 
 - Para los **gastos**, prioriza la precisión total permitiendo al usuario definir reglas estrictas mediante palabras clave (evitando categorías basura).
 - Para los **ingresos**, utiliza un sistema de auto-generación que detecta empresas y particulares automáticamente.
+
+## ⚠️ Nota Importante sobre Adaptabilidad (Disclaimer)
+Este sistema ha sido diseñado y optimizado como una solución a medida para un caso de uso personal, adaptado al formato exacto de exportación Excel de una entidad bancaria específica. **No es un software *plug-and-play* universal para cualquier negocio o banco.**
+
+Si otro usuario o empresa desea implementar este sistema, deberá adaptar el código a su contexto. Principalmente:
+1. **El Motor de Lectura (`src/motor.py`):** La función `limpiar_datos()` asume que el Excel tiene una estructura concreta (ej. ignorar las 3 primeras filas con `skiprows=3`) y busca columnas específicas ("Importe", "Concepto", "Saldo"). Deberás mapear estos valores al formato de tu propio banco.
+2. **La Lógica de Negocio:** El sistema asume que los ingresos se dividen principalmente en "Empresas" y "Particulares", y que los gastos se controlan al milímetro de forma manual. Una empresa con un modelo de facturación diferente (ej. e-commerce masivo) requeriría modificar el enfoque de las reglas.
+
+El proyecto está diseñado de forma **altamente modular** precisamente para facilitar esta adaptación: puedes reescribir por completo cómo se lee el Excel en `motor.py` sin que el resto del programa deje de funcionar.
+
+---
 
 ## ✨ Características Principales
 * **Cálculo de Saldo Inteligente (Ingeniería Inversa):** El programa viaja a la fecha más antigua del extracto, lee el saldo y el importe de esa operación, y despeja la ecuación matemática para saber exactamente con cuánto dinero empezaste el periodo.
@@ -25,12 +39,12 @@ El análisis principal se ejecuta con `main.py`. Este archivo coordina el proces
 4. Genera reportes detallados en `data/output/` divididos en Gastos e Ingresos (Clasificados, Resúmenes Totales y Pendientes de clasificar).
 
 ### 2. Herramientas Auxiliares y Mantenimiento
-Para que el sistema sea fácil de mantener y actualizar a lo largo de los años, el proyecto incluye un conjunto de herramientas (`src/`):
+Para que el sistema sea fácil de mantener a lo largo de los años, el proyecto incluye herramientas extra (`src/`):
 
-* 🔍 **`exploration.py` (Explorador de Gastos):** Escanea los conceptos de los gastos que han quedado "SIN CLASIFICAR", extrae los conceptos únicos y te ayuda a identificar rápidamente qué nuevas palabras clave debes añadir a tu archivo manual `reglas.json`.
-* 🔍 **`explorar_ingresos.py` (Explorador de Ingresos):** Realiza la misma labor de exploración de conceptos únicos, pero enfocado en las entradas de dinero.
-* 🤖 **`generar_reglas_ingresos.py` (Creador de Reglas Automático):** A diferencia de los gastos, los ingresos se automatizan. Este script coge los resultados del explorador de ingresos y genera automáticamente el archivo `reglas_ingresos.json`, clasificando el dinero entrante en "Empresas" (Bizum comerciales, nóminas, transferencias empresariales) y "Particulares - Varios" (Bizum de amigos).
-* 🩺 **`diagnostico.py` (Auditor Financiero):** Una herramienta de control de calidad. Verifica la integridad estructural del Excel del banco buscando filas ignoradas, importes en cero, errores de formato (NaN) y comprueba que el flujo calculado por Python cuadra al céntimo con el banco.
+* 🔍 **`exploration.py` (Explorador de Gastos):** Escanea los gastos "SIN CLASIFICAR", extrae los conceptos únicos y te ayuda a identificar rápidamente qué nuevas palabras clave debes añadir a tus reglas manuales.
+* 🔍 **`explorar_ingresos.py` (Explorador de Ingresos):** Realiza la misma labor de exploración, pero enfocado en las entradas de dinero.
+* 🤖 **`generar_reglas_ingresos.py` (Creador de Reglas Automático):** Coge los resultados del explorador de ingresos y genera automáticamente el archivo de reglas, clasificando el dinero entrante en "Empresas" y "Particulares - Varios".
+* 🩺 **`diagnostico.py` (Auditor Financiero):** Verifica la integridad estructural del Excel del banco buscando filas ignoradas y comprueba que el flujo calculado por Python cuadra al céntimo con el banco.
 
 ---
 
@@ -55,40 +69,31 @@ analitics-bank/
 │   ├── generar_reglas_...py # Generador automático de JSON para ingresos
 │   └── diagnostico.py       # Auditor de integridad de datos
 └── .gitignore               # Protección de datos confidenciales locales
+🛠️ Requisitos Técnicos
+Python 3.8 o superior.
 
-## 🛠️ Requisitos Técnicos
-
-*   Python 3.8 o superior.
-*   Librerías requeridas: `pandas`, `openpyxl`.
+Librerías requeridas: pandas, openpyxl.
 
 Puedes instalar las dependencias con:
-```bash
+
+Bash
 pip install pandas openpyxl
-```
+💻 Instrucciones de Uso
+Coloca tu extracto bancario en formato Excel (.xlsx) dentro de la carpeta data/input/.
 
-## 💻 Instrucciones de Uso
+Ejecuta el pipeline principal desde la raíz del proyecto:
 
-1.  Coloca tu extracto bancario en formato Excel (`.xlsx`) dentro de la carpeta `data/input/`.
-2.  Ejecuta el pipeline principal desde la raíz del proyecto:
-    ```bash
-    python src/main.py
-    ```
-3.  Elige el archivo a analizar en el menú interactivo.
-4.  (Opcional) Introduce las fechas de inicio y fin para acotar el análisis.
-5.  Revisa los resultados por consola y consulta los reportes detallados en la carpeta `data/output/`.
+Bash
+python src/main.py
+Elige el archivo a analizar en el menú interactivo.
 
-## 🔮 Próximos Pasos (Roadmap)
-*   [ ] Implementación de interfaz gráfica web mediante **Streamlit**.
-*   [ ] Generación de gráficos y visualizaciones interactivas.
-*   [ ] Soporte multi-cuenta bancaria.
-*   
+(Opcional) Introduce las fechas de inicio y fin para acotar el análisis.
 
+Revisa los resultados por consola y consulta los reportes detallados en la carpeta data/output/.
 
-## ⚠️ Nota Importante sobre Adaptabilidad (Disclaimer)
-Este sistema ha sido diseñado y optimizado como una solución a medida para un caso de uso personal, adaptado al formato exacto de exportación Excel de una entidad bancaria específica. **No es un software *plug-and-play* universal para cualquier negocio o banco.**
+🔮 Próximos Pasos (Roadmap)
+[ ] Implementación de interfaz gráfica web mediante Streamlit.
 
-Si otro usuario o empresa desea implementar este sistema, deberá adaptar el código a su contexto. Principalmente:
-1. **El Motor de Lectura (`src/motor.py`):** La función `limpiar_datos()` asume que el Excel tiene una estructura concreta (ej. ignorar las 3 primeras filas con `skiprows=3`) y busca columnas específicas ("Importe", "Concepto", "Saldo"). Deberás mapear estos valores al formato de tu propio banco.
-2. **La Lógica de Negocio:** El sistema asume que los ingresos se dividen principalmente en "Empresas" y "Particulares", y que los gastos se controlan al milímetro de forma manual. Una empresa con un modelo de facturación diferente (ej. e-commerce masivo) requeriría modificar el enfoque de las reglas.
+[ ] Generación de gráficos y visualizaciones interactivas.
 
-El proyecto está diseñado de forma **altamente modular** precisamente para facilitar esta adaptación: puedes reescribir por completo cómo se lee el Excel en `motor.py` sin que el resto del programa (menús, reportes, auditoría) deje de funcionar.
+[ ] Soporte multi-cuenta bancaria.
