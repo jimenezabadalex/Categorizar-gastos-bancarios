@@ -8,13 +8,32 @@ from config import (
 from motor import limpiar_datos, clasificar_movimientos
 
 def ejecutar_pipeline():
-    print("🚀 Iniciando categorización integral automática...")
+    print("🚀 Bienvenido al Analizador Financiero")
+    print("Deje en blanco y pulse ENTER para analizar todo el documento.\n")
     
+    # --- INTERFAZ DE USUARIO ---
+    fecha_inicio = input("📅 Introduce fecha de INICIO (DD/MM/AAAA): ").strip()
+    fecha_fin = input("📅 Introduce fecha de FIN (DD/MM/AAAA): ").strip()
+    
+    # Si están en blanco, las pasamos como None
+    fecha_inicio = fecha_inicio if fecha_inicio else None
+    fecha_fin = fecha_fin if fecha_fin else None
+    
+    if fecha_inicio or fecha_fin:
+        print(f"\n⏳ Analizando periodo: {fecha_inicio or 'Inicio'} al {fecha_fin or 'Final'}...")
+    else:
+        print("\n⏳ Analizando todo el histórico completo...")
+        
     reglas_gastos = cargar_reglas()
     reglas_ingresos = cargar_reglas_ingresos()
     
-    # --- AHORA RECIBIMOS 3 VARIABLES DEL MOTOR ---
-    df_gastos, df_ingresos, saldo_inicial = limpiar_datos(ARCHIVO_REAL)
+    # --- PASAMOS LAS FECHAS AL MOTOR ---
+    df_gastos, df_ingresos, saldo_inicial = limpiar_datos(ARCHIVO_REAL, fecha_inicio, fecha_fin)
+    
+    # Evitar error si el usuario pone una fecha donde no hay movimientos
+    if df_gastos.empty and df_ingresos.empty:
+        print("\n❌ No hay movimientos en este rango de fechas. Operación cancelada.")
+        return
     
     # --- 1. PROCESAMIENTO DE GASTOS ---
     df_gastos_clasificado = clasificar_movimientos(df_gastos, reglas_gastos)
