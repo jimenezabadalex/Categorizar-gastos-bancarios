@@ -51,9 +51,17 @@ def ejecutar_pipeline():
         print(f"\n⏳ Analizando periodo: {fecha_inicio or 'Inicio'} al {fecha_fin or 'Final'}...")
     else:
         print("\n⏳ Analizando todo el histórico completo...")
+
+    # --- NUEVO: DETECCIÓN MODO DEMO ---
+    es_demo = (archivo_real.name == "extracto_demo.xlsx")
+    if es_demo:
+        print("\n🧪 [MODO DEMO DETECTADO] Usando reglas de ejemplo para la clasificación...")
         
-    reglas_gastos = cargar_reglas()
-    reglas_ingresos = cargar_reglas_ingresos()
+    reglas_gastos = cargar_reglas(es_demo)
+    reglas_ingresos = cargar_reglas_ingresos(es_demo)
+    # ----------------------------------
+        
+
     
     # --- PASAMOS EL ARCHIVO ELEGIDO AL MOTOR ---
     df_gastos, df_ingresos, saldo_inicial = limpiar_datos(archivo_real, fecha_inicio, fecha_fin)
