@@ -1,36 +1,60 @@
-# 📊 Auditor Financiero Automatizado
+# 📊 Analizador Financiero Automatizado (Bank Analytics)
 
-Una herramienta de análisis de datos desarrollada en Python para automatizar la contabilidad personal y profesional. Este script procesa extractos bancarios en bruto (formato Excel), limpia los datos, clasifica los movimientos y genera reportes financieros detallados con los saldos reales y flujos de caja.
+## 🎯 ¿Qué es este proyecto y para qué sirve?
+Este proyecto es un ecosistema de scripts en Python diseñado para automatizar el control de las finanzas personales o empresariales. Toma los extractos bancarios en crudo (archivos Excel) y los transforma en informes clasificados, calculando con exactitud matemática el flujo de caja y los saldos reales.
 
-## 🚀 Características Principales
+El sistema resuelve un problema común en la contabilidad automatizada: **la diferencia entre gastos e ingresos**. 
+- Para los **gastos**, prioriza la precisión total permitiendo al usuario definir reglas estrictas mediante palabras clave (evitando categorías basura).
+- Para los **ingresos**, utiliza un sistema de auto-generación que detecta empresas y particulares automáticamente.
 
-*   **Menú Interactivo (CLI):** Detección automática de archivos en la carpeta de entrada y selección mediante menú en la terminal.
-*   **Análisis Temporal Dinámico:** Capacidad para filtrar el análisis por rango de fechas (Inicio - Fin).
-*   **Cálculo Inteligente de Saldo Inicial:** Utiliza ingeniería inversa matemática sobre la última fila del extracto para calcular el saldo de inicio exacto, permitiendo cuadrar los resultados al céntimo con la entidad bancaria, sin importar los filtros de fecha aplicados.
-*   **Motor de Categorización Híbrido:** 
-    *   *Ingresos:* Categorización 100% automática basada en sufijos y nombres de empresas/particulares.
-    *   *Gastos:* Clasificación basada en reglas estrictas (diccionarios JSON) para evitar el "ruido" de categorías inútiles y mantener una ontología de gastos limpia.
-*   **Generación de Reportes:** Exporta los resultados clasificados, un resumen de totales y un listado de movimientos "pendientes de clasificar" para facilitar el entrenamiento del modelo.
+## ✨ Características Principales
+* **Cálculo de Saldo Inteligente (Ingeniería Inversa):** El programa viaja a la fecha más antigua del extracto, lee el saldo y el importe de esa operación, y despeja la ecuación matemática para saber exactamente con cuánto dinero empezaste el periodo.
+* **Interfaz de Terminal Interactiva:** Menú dinámico que detecta automáticamente los archivos Excel disponibles en la carpeta de entrada.
+* **Filtros Temporales:** Permite analizar el histórico completo o recortar el análisis entre dos fechas específicas, recalculando el saldo inicial de forma dinámica.
+* **Modular y Escalable:** Las reglas de negocio (diccionarios JSON) están separadas de la lógica del código (Python).
 
-## 📁 Estructura del Proyecto
+---
 
-El proyecto sigue una arquitectura modular para separar la configuración, los datos y la lógica de negocio:
+## 🏗️ Arquitectura y Flujo de Trabajo
+
+### 1. El Núcleo de Análisis (Uso diario)
+El análisis principal se ejecuta con `main.py`. Este archivo coordina el proceso:
+1. Lee la carpeta `data/input/` y te pide elegir un Excel.
+2. Te permite filtrar por fechas de inicio y fin.
+3. El `motor.py` limpia los datos, corrige formatos numéricos, calcula el saldo inicial y separa gastos de ingresos.
+4. Genera reportes detallados en `data/output/` divididos en Gastos e Ingresos (Clasificados, Resúmenes Totales y Pendientes de clasificar).
+
+### 2. Herramientas Auxiliares y Mantenimiento
+Para que el sistema sea fácil de mantener y actualizar a lo largo de los años, el proyecto incluye un conjunto de herramientas (`src/`):
+
+* 🔍 **`exploration.py` (Explorador de Gastos):** Escanea los conceptos de los gastos que han quedado "SIN CLASIFICAR", extrae los conceptos únicos y te ayuda a identificar rápidamente qué nuevas palabras clave debes añadir a tu archivo manual `reglas.json`.
+* 🔍 **`explorar_ingresos.py` (Explorador de Ingresos):** Realiza la misma labor de exploración de conceptos únicos, pero enfocado en las entradas de dinero.
+* 🤖 **`generar_reglas_ingresos.py` (Creador de Reglas Automático):** A diferencia de los gastos, los ingresos se automatizan. Este script coge los resultados del explorador de ingresos y genera automáticamente el archivo `reglas_ingresos.json`, clasificando el dinero entrante en "Empresas" (Bizum comerciales, nóminas, transferencias empresariales) y "Particulares - Varios" (Bizum de amigos).
+* 🩺 **`diagnostico.py` (Auditor Financiero):** Una herramienta de control de calidad. Verifica la integridad estructural del Excel del banco buscando filas ignoradas, importes en cero, errores de formato (NaN) y comprueba que el flujo calculado por Python cuadra al céntimo con el banco.
+
+---
+
+## 📂 Estructura de Directorios
 
 ```text
 analitics-bank/
-├── data/                    # (Ignorado en Git por privacidad)
-│   ├── input/               # Depositar aquí los archivos .xlsx del banco
-│   └── output/              # Reportes generados (separados en /gastos e /ingresos)
-├── config/                  # Reglas de negocio (Ignorado en Git)
-│   ├── reglas.json          # Diccionario de categorización de gastos
-│   └── reglas_ingresos.json # Diccionario de categorización de ingresos
-├── src/                     # Código fuente
-│   ├── config.py            # Gestor de rutas
-│   ├── motor.py             # Limpieza de datos (Pandas) y lógica matemática
-│   ├── main.py              # Interfaz CLI y pipeline de ejecución
-│   └── diagnostico.py       # Herramienta de auditoría para detectar errores de formato
-└── .gitignore               # Protección de datos confidenciales y caché
-```
+├── data/
+│   ├── input/               # Directorio para los extractos bancarios en bruto (.xlsx)
+│   └── output/              # Reportes generados automáticamente
+│       ├── gastos/          
+│       └── ingresos/        
+├── config/                  
+│   ├── reglas.json          # Diccionario manual de categorías de gastos
+│   └── reglas_ingresos.json # Diccionario auto-generado de categorías de ingresos
+├── src/                     
+│   ├── main.py              # Orquestador e interfaz principal
+│   ├── motor.py             # Lógica de limpieza, matemáticas y clasificación
+│   ├── config.py            # Gestor de rutas del sistema
+│   ├── exploration.py       # Herramienta de extracción de conceptos (Gastos)
+│   ├── explorar_ingresos.py # Herramienta de extracción de conceptos (Ingresos)
+│   ├── generar_reglas_...py # Generador automático de JSON para ingresos
+│   └── diagnostico.py       # Auditor de integridad de datos
+└── .gitignore               # Protección de datos confidenciales locales
 
 ## 🛠️ Requisitos Técnicos
 
