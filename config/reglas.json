@@ -59,7 +59,8 @@
         "TRANSMISIONES"
     ],
     "Neumáticos": [
-        "VICTYRES"
+        "VICTYRES",
+        "AVTYRES"
     ],
     "Gasóleos": [
         "SANCHEZ Y MURCIA", 
@@ -69,7 +70,8 @@
     "Seguros": [
         "FIATC", 
         "MUTUA", 
-        "REALE SEGUROS GENERALES"
+        "REALE SEGUROS GENERALES",
+        "MAS PREVENCION, SERVICIO DE PREVENCION"
     ],
     "Góndola": [
         "HORMACOMON"
