@@ -69,31 +69,25 @@ analitics-bank/
 │   ├── generar_reglas_...py # Generador automático de JSON para ingresos
 │   └── diagnostico.py       # Auditor de integridad de datos
 └── .gitignore               # Protección de datos confidenciales locales
-🛠️ Requisitos Técnicos
-Python 3.8 o superior.
+```
 
-Librerías requeridas: pandas, openpyxl.
+## 🛠️ Requisitos Técnicos
+
+*   Python 3.8 o superior.
+*   Librerías requeridas: `pandas`, `openpyxl`.
 
 Puedes instalar las dependencias con:
-
-Bash
+```bash
 pip install pandas openpyxl
-💻 Instrucciones de Uso
-Coloca tu extracto bancario en formato Excel (.xlsx) dentro de la carpeta data/input/.
+```
 
-Ejecuta el pipeline principal desde la raíz del proyecto:
+## 💻 Instrucciones de Uso
 
-Bash
-python src/main.py
-Elige el archivo a analizar en el menú interactivo.
-
-(Opcional) Introduce las fechas de inicio y fin para acotar el análisis.
-
-Revisa los resultados por consola y consulta los reportes detallados en la carpeta data/output/.
-
-🔮 Próximos Pasos (Roadmap)
-[ ] Implementación de interfaz gráfica web mediante Streamlit.
-
-[ ] Generación de gráficos y visualizaciones interactivas.
-
-[ ] Soporte multi-cuenta bancaria.
+1. Coloca tu extracto bancario en formato Excel (`.xlsx`) dentro de la carpeta `data/input/`.
+2. Ejecuta el pipeline principal desde la raíz del proyecto:
+   ```bash
+   python src/main.py
+   ```
+3. Elige el archivo a analizar en el menú interactivo.
+4. (Opcional) Introduce las fechas de inicio y fin para acotar el análisis.
+5. Revisa los resultados por consola y consulta los reportes detallados en la carpeta `data/output/`.
