@@ -1,0 +1,14 @@
+{
+    "Suministros - Hogar": [
+        "IBERDROLA",
+        "ENDESA"
+    ],
+    "Alimentacion - Supermercado": [
+        "MERCADONA",
+        "CARREFOUR"
+    ],
+    "Ocio - Suscripciones": [
+        "AMAZON PRIME",
+        "NETFLIX"
+    ]
+}

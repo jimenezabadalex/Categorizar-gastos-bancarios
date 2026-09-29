@@ -91,3 +91,9 @@ pip install pandas openpyxl
 3. Elige el archivo a analizar en el menú interactivo.
 4. (Opcional) Introduce las fechas de inicio y fin para acotar el análisis.
 5. Revisa los resultados por consola y consulta los reportes detallados en la carpeta `data/output/`.
+
+
+
+
+
+
