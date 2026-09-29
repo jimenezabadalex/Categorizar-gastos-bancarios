@@ -1,21 +1,49 @@
 import pandas as pd
 
 from config import (
-    ARCHIVO_REAL, NOMBRE_EXTRACTO, 
-    SALIDA_REPORTE, SALIDA_PENDIENTES, SALIDA_RESUMEN, cargar_reglas,
-    SALIDA_REPORTE_INGRESOS, SALIDA_PENDIENTES_INGRESOS, SALIDA_RESUMEN_INGRESOS, cargar_reglas_ingresos
+    DIR_INPUT, DIR_GASTOS, DIR_INGRESOS, 
+    cargar_reglas, cargar_reglas_ingresos
 )
 from motor import limpiar_datos, clasificar_movimientos
 
+def seleccionar_archivo():
+    # Buscamos todos los archivos .xlsx en la carpeta input
+    archivos = list(DIR_INPUT.glob("*.xlsx"))
+    
+    if not archivos:
+        print("❌ No se encontraron archivos Excel en la carpeta data/input/")
+        return None
+        
+    print("\n📂 ARCHIVOS DISPONIBLES:")
+    for i, archivo in enumerate(archivos):
+        print(f"  [{i + 1}] {archivo.name}")
+        
+    while True:
+        try:
+            seleccion = int(input("\n👉 Elige el número del archivo a analizar: ")) - 1
+            if 0 <= seleccion < len(archivos):
+                return archivos[seleccion]
+            else:
+                print("⚠️ Número fuera de rango. Inténtalo de nuevo.")
+        except ValueError:
+            print("⚠️ Por favor, introduce un número válido.")
+
 def ejecutar_pipeline():
     print("🚀 Bienvenido al Analizador Financiero")
-    print("Deje en blanco y pulse ENTER para analizar todo el documento.\n")
     
-    # --- INTERFAZ DE USUARIO ---
+    # 1. Menú de selección de archivo
+    archivo_real = seleccionar_archivo()
+    if not archivo_real:
+        return
+        
+    nombre_extracto = archivo_real.stem
+    print(f"\n✅ Archivo seleccionado: {archivo_real.name}")
+    
+    # 2. Fechas (dejamos la interfaz que ya teníamos)
+    print("\nDeje en blanco y pulse ENTER para analizar todo el documento.")
     fecha_inicio = input("📅 Introduce fecha de INICIO (DD/MM/AAAA): ").strip()
     fecha_fin = input("📅 Introduce fecha de FIN (DD/MM/AAAA): ").strip()
     
-    # Si están en blanco, las pasamos como None
     fecha_inicio = fecha_inicio if fecha_inicio else None
     fecha_fin = fecha_fin if fecha_fin else None
     
@@ -27,14 +55,13 @@ def ejecutar_pipeline():
     reglas_gastos = cargar_reglas()
     reglas_ingresos = cargar_reglas_ingresos()
     
-    # --- PASAMOS LAS FECHAS AL MOTOR ---
-    df_gastos, df_ingresos, saldo_inicial = limpiar_datos(ARCHIVO_REAL, fecha_inicio, fecha_fin)
+    # --- PASAMOS EL ARCHIVO ELEGIDO AL MOTOR ---
+    df_gastos, df_ingresos, saldo_inicial = limpiar_datos(archivo_real, fecha_inicio, fecha_fin)
     
-    # Evitar error si el usuario pone una fecha donde no hay movimientos
     if df_gastos.empty and df_ingresos.empty:
         print("\n❌ No hay movimientos en este rango de fechas. Operación cancelada.")
         return
-    
+
     # --- 1. PROCESAMIENTO DE GASTOS ---
     df_gastos_clasificado = clasificar_movimientos(df_gastos, reglas_gastos)
     
@@ -63,14 +90,22 @@ def ejecutar_pipeline():
     fila_total_i = pd.DataFrame([{'Categoria_Global': 'TOTAL INGRESOS', 'Importe': suma_ingresos}])
     resumen_ingresos = pd.concat([resumen_ingresos, fila_total_i], ignore_index=True)
     
-    # --- 3. EXPORTAR ARCHIVOS ---
-    df_gastos_clasificado.to_excel(SALIDA_REPORTE, index=False)
-    pendientes_gastos.to_excel(SALIDA_PENDIENTES, index=False)
-    resumen_gastos.to_excel(SALIDA_RESUMEN, index=False)
+    # --- 3. EXPORTAR ARCHIVOS (Ahora con nombres dinámicos) ---
+    salida_reporte = DIR_GASTOS / f"gastos_clasificados_{nombre_extracto}.xlsx"
+    salida_pendientes = DIR_GASTOS / f"pendientes_clasificar_{nombre_extracto}.xlsx"
+    salida_resumen = DIR_GASTOS / f"resumen_totales_{nombre_extracto}.xlsx"
     
-    df_ingresos_clasificado.to_excel(SALIDA_REPORTE_INGRESOS, index=False)
-    pendientes_ingresos.to_excel(SALIDA_PENDIENTES_INGRESOS, index=False)
-    resumen_ingresos.to_excel(SALIDA_RESUMEN_INGRESOS, index=False)
+    salida_reporte_ingresos = DIR_INGRESOS / f"ingresos_clasificados_{nombre_extracto}.xlsx"
+    salida_pendientes_ingresos = DIR_INGRESOS / f"pendientes_clasificar_ingresos_{nombre_extracto}.xlsx"
+    salida_resumen_ingresos = DIR_INGRESOS / f"resumen_totales_ingresos_{nombre_extracto}.xlsx"
+
+    df_gastos_clasificado.to_excel(salida_reporte, index=False)
+    pendientes_gastos.to_excel(salida_pendientes, index=False)
+    resumen_gastos.to_excel(salida_resumen, index=False)
+    
+    df_ingresos_clasificado.to_excel(salida_reporte_ingresos, index=False)
+    pendientes_ingresos.to_excel(salida_pendientes_ingresos, index=False)
+    resumen_ingresos.to_excel(salida_resumen_ingresos, index=False)
     
     # --- 4. MOSTRAR RESULTADOS EN CONSOLA ---
     flujo_periodo = suma_ingresos - suma_gastos
