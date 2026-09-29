@@ -81,3 +81,14 @@ pip install pandas openpyxl
 *   [ ] Implementación de interfaz gráfica web mediante **Streamlit**.
 *   [ ] Generación de gráficos y visualizaciones interactivas.
 *   [ ] Soporte multi-cuenta bancaria.
+*   
+
+
+## ⚠️ Nota Importante sobre Adaptabilidad (Disclaimer)
+Este sistema ha sido diseñado y optimizado como una solución a medida para un caso de uso personal, adaptado al formato exacto de exportación Excel de una entidad bancaria específica. **No es un software *plug-and-play* universal para cualquier negocio o banco.**
+
+Si otro usuario o empresa desea implementar este sistema, deberá adaptar el código a su contexto. Principalmente:
+1. **El Motor de Lectura (`src/motor.py`):** La función `limpiar_datos()` asume que el Excel tiene una estructura concreta (ej. ignorar las 3 primeras filas con `skiprows=3`) y busca columnas específicas ("Importe", "Concepto", "Saldo"). Deberás mapear estos valores al formato de tu propio banco.
+2. **La Lógica de Negocio:** El sistema asume que los ingresos se dividen principalmente en "Empresas" y "Particulares", y que los gastos se controlan al milímetro de forma manual. Una empresa con un modelo de facturación diferente (ej. e-commerce masivo) requeriría modificar el enfoque de las reglas.
+
+El proyecto está diseñado de forma **altamente modular** precisamente para facilitar esta adaptación: puedes reescribir por completo cómo se lee el Excel en `motor.py` sin que el resto del programa (menús, reportes, auditoría) deje de funcionar.
